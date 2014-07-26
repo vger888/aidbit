@@ -1036,6 +1036,7 @@ uint256 WantedByOrphan(const CBlock* pblockOrphan)
 // miner's coin base reward
 int64_t GetProofOfWorkReward(int nBits, int nHeight, int64_t nFees)
 {
+	
 	double dDiff = ConvertBitsToDouble(nBits);
 
    	int64_t nSubsidy;
@@ -1697,7 +1698,7 @@ bool CBlock::ConnectBlock(CTxDB& txdb, CBlockIndex* pindex, bool fJustCheck)
 
     if (IsProofOfWork())
     {
-        int64_t nReward = GetProofOfWorkReward(pindex->pprev->nBits, pindex->pprev->nHeight, nFees);
+        int64_t nReward = GetProofOfWorkReward(GetLastBlockIndex(pindexBest, false)->nBits, GetLastBlockIndex(pindexBest, false)->nHeight, nFees);
 		int64_t nRDonation = (nReward-nFees) * double(DONATION_PERCENT)/100;
 		int64_t nRFoundation = (nReward-nFees) * double(FOUNDATION_PERCENT)/100;
 		
