@@ -1704,7 +1704,7 @@ bool CBlock::ConnectBlock(CTxDB& txdb, CBlockIndex* pindex, bool fJustCheck)
 
     if (IsProofOfWork())
     {
-        int64_t nReward = GetProofOfWorkReward(pindex->nHeight > 17900 ? pindex->pprev->nBits : GetLastBlockIndex(pindexBest, false)->nBits, pindex->pprev->nHeight, nFees);
+        int64_t nReward = GetProofOfWorkReward(pindex->pprev->nHeight > 10000 ? pindex->pprev->nBits : GetLastBlockIndex(pindexBest, false)->nBits, pindex->pprev->nHeight, nFees);
 
         int64_t nRDonation = (nReward-nFees) * double(DONATION_PERCENT)/100;
 		int64_t nRFoundation = (nReward-nFees) * double(FOUNDATION_PERCENT)/100;
@@ -1720,20 +1720,20 @@ bool CBlock::ConnectBlock(CTxDB& txdb, CBlockIndex* pindex, bool fJustCheck)
 	    //Check donation fee       		
 		CBitcoinAddress addressDonation(!fTestNet ? DONATION : DONATION_TEST);
 		CScript scriptPubKeyDonation;
-        scriptPubKeyDonation.SetDestination(addressDonation.Get());
+        scriptPubKeyDonation.SetDestination(addressDonation.Get());      
         if (vtx[0].vout[1].scriptPubKey != scriptPubKeyDonation)
-            return error("ConnectBlock() : coinbase does not pay to the donation address!");
+            return DoS(50, error("ConnectBlock() : coinbase does not pay to the donation address!"));
         if (vtx[0].vout[1].nValue < nRDonation)
-            return error("ConnectBlock() : coinbase does not pay enough to donation address!");
+            return DoS(50, error("ConnectBlock() : coinbase does not pay enough to donation address!"));	
 
         //Check foundation fee
 		CBitcoinAddress addressFoundation(!fTestNet ? FOUNDATION : FOUNDATION_TEST);
 		CScript scriptPubKeyFoundation;
         scriptPubKeyFoundation.SetDestination(addressFoundation.Get());      
         if (vtx[0].vout[2].scriptPubKey != scriptPubKeyFoundation)
-            return error("ConnectBlock() : coinbase does not pay to the foundation address!");
+            return DoS(50, error("ConnectBlock() : coinbase does not pay to the foundation address!"));
         if (vtx[0].vout[2].nValue < nRFoundation)
-            return error("ConnectBlock() : coinbase does not pay enough to foundation address!");
+            return DoS(50, error("ConnectBlock() : coinbase does not pay enough to foundation address!"));	
 	}
 	
 	if (IsProofOfStake())

@@ -366,7 +366,7 @@ CBlock* CreateNewBlock(CWallet* pwallet, bool fProofOfStake, int64_t* pFees)
 
         if (!fProofOfStake)
 		{
-		     int64_t POWReward = GetProofOfWorkReward(GetLastBlockIndex(pindexPrev, false)->nBits, pindexPrev->nHeight, nFees);
+		     int64_t POWReward = GetProofOfWorkReward(pindexPrev->nBits, pindexPrev->nHeight, nFees);
 		     int64_t POWRewardN = POWReward-nFees;
 		     double contribPerc = double(DONATION_PERCENT + FOUNDATION_PERCENT)/100;
 		     pblock->vtx[0].vout[0].nValue = POWReward - POWRewardN*contribPerc;
