@@ -1161,7 +1161,9 @@ unsigned int GetNextTargetRequired(const CBlockIndex* pindexLast, bool fProofOfS
     // Pre-Fork spacing
     if (pindexLast->nHeight < 17200)
 	nStakeTargetSpacing = 60;
-    
+    else
+        nStakeTargetSpacing = 60*10;
+        
     // ppcoin: target change every block
     // ppcoin: retarget with exponential moving toward target spacing
 
