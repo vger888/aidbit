@@ -42,6 +42,7 @@ CBigNum bnProofOfStakeLimit(~uint256(0) >> 20);
 CBigNum bnProofOfWorkLimitTestNet(~uint256(0) >> 16);
 
 unsigned int nTargetSpacing = 1 * 60; // 1 minute
+unsigned int nStakeTargetSpacing = 10 * 60; // 10 minutes
 unsigned int nStakeMinAge = 60 * 60 * 24 * 7; // 7 days as zero time weight
 unsigned int nStakeMaxAge = 60 * 60 * 24 * 90; // 90 days as full weight
 unsigned int nModifierInterval = 10 * 60; // time to elapse before new modifier is computed
@@ -1162,9 +1163,9 @@ unsigned int GetNextTargetRequired(const CBlockIndex* pindexLast, bool fProofOfS
 
     CBigNum bnNew;
     bnNew.SetCompact(pindexPrev->nBits);
-    int64 nTargetSpacingAdj = fProofOfStake? nTargetSpacing : min(nTargetSpacingWorkMax, (int64) nTargetSpacing * (1 + pindexLast->nHeight - pindexPrev->nHeight));
-	int64_t nInterval = nTargetTimespan / nTargetSpacingAdj;    
-	bnNew *= ((nInterval - 1) * nTargetSpacingAdj + nActualSpacing + nActualSpacing);
+    int64 nTargetSpacingAdj = fProofOfStake? nStakeTargetSpacing : min(nTargetSpacingWorkMax, (int64) nTargetSpacing * (1 + pindexLast->nHeight - pindexPrev->nHeight));
+    int64_t nInterval = nTargetTimespan / nTargetSpacingAdj;
+    bnNew *= ((nInterval - 1) * nTargetSpacingAdj + nActualSpacing + nActualSpacing);
     bnNew /= ((nInterval + 1) * nTargetSpacingAdj);
 
     if (bnNew <= 0 || bnNew > bnTargetLimit)
@@ -1697,7 +1698,7 @@ bool CBlock::ConnectBlock(CTxDB& txdb, CBlockIndex* pindex, bool fJustCheck)
 
     if (IsProofOfWork())
     {
-        int64_t nReward = GetProofOfWorkReward(pindex->pprev->nBits, pindex->pprev->nHeight, nFees);
+        int64_t nReward = GetProofOfWorkReward(GetLastBlockIndex(pindexBest, false)->nBits, pindex->pprev->nHeight, nFees);
 		int64_t nRDonation = (nReward-nFees) * double(DONATION_PERCENT)/100;
 		int64_t nRFoundation = (nReward-nFees) * double(FOUNDATION_PERCENT)/100;
 		
@@ -1714,18 +1715,18 @@ bool CBlock::ConnectBlock(CTxDB& txdb, CBlockIndex* pindex, bool fJustCheck)
 		CScript scriptPubKeyDonation;
         scriptPubKeyDonation.SetDestination(addressDonation.Get());      
         if (vtx[0].vout[1].scriptPubKey != scriptPubKeyDonation)
-            return error("ConnectBlock() : coinbase does not pay to the donation address!");
+            return DoS(50, error("ConnectBlock() : coinbase does not pay to the donation address!"));
         if (vtx[0].vout[1].nValue < nRDonation)
-            return error("ConnectBlock() : coinbase does not pay enough to donation address!");	
+            return DoS(50, error("ConnectBlock() : coinbase does not pay enough to donation address!"));	
 
         //Check foundation fee
 		CBitcoinAddress addressFoundation(!fTestNet ? FOUNDATION : FOUNDATION_TEST);
 		CScript scriptPubKeyFoundation;
         scriptPubKeyFoundation.SetDestination(addressFoundation.Get());      
         if (vtx[0].vout[2].scriptPubKey != scriptPubKeyFoundation)
-            return error("ConnectBlock() : coinbase does not pay to the foundation address!");
+            return DoS(50, error("ConnectBlock() : coinbase does not pay to the foundation address!"));
         if (vtx[0].vout[2].nValue < nRFoundation)
-            return error("ConnectBlock() : coinbase does not pay enough to foundation address!");	
+            return DoS(50, error("ConnectBlock() : coinbase does not pay enough to foundation address!"));	
 	}
 	
 	if (IsProofOfStake())
@@ -2382,7 +2383,7 @@ uint256 CBlockIndex::GetBlockTrust() const
     if (bnTarget <= 0)
         return 0;
 
-    return ((CBigNum(1)<<256) / (bnTarget+1)).getuint256();
+    return (IsProofOfStake()? ((CBigNum(1)<<256) / (bnTarget+1)).getuint256() : 1);
 }
 
 bool CBlockIndex::IsSuperMajority(int minVersion, const CBlockIndex* pstart, unsigned int nRequired, unsigned int nToCheck)
@@ -2432,9 +2433,9 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
 
         if (bnNewBlock > bnRequired)
         {
-            if (pfrom)
-                pfrom->Misbehaving(100);
-            return error("ProcessBlock() : block with too little %s", pblock->IsProofOfStake()? "proof-of-stake" : "proof-of-work");
+            //if (pfrom)
+                //pfrom->Misbehaving(100);
+            //return error("ProcessBlock() : block with too little %s", pblock->IsProofOfStake()? "proof-of-stake" : "proof-of-work");
         }
     }
 
