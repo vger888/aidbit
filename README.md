@@ -3,6 +3,8 @@ AidBit development tree
 
 AidBit is a hybrid PoW/PoS-based cryptocurrency.
 
+www.aidbit.net
+
 Development process
 ===========================
 
