@@ -1,11 +1,10 @@
 TEMPLATE = app
 TARGET = aidbit-qt
-VERSION = 1.0.1
+VERSION = 1.0.2
 INCLUDEPATH += src src/json src/qt
-DEFINES += QT_GUI BOOST_THREAD_USE_LIB
+DEFINES += QT_GUI BOOST_THREAD_USE_LIB BOOST_SPIRIT_THREADSAFE
 CONFIG += no_include_pwd
 CONFIG += thread
-CONFIG += exceptions
 QT  += network
 
 greaterThan(QT_MAJOR_VERSION, 4) {
@@ -35,13 +34,13 @@ BOOST_INCLUDE_PATH=C:/deps/boost_1_55_0
 BOOST_LIB_PATH=C:/deps/boost_1_55_0/stage/lib
 BDB_INCLUDE_PATH=C:/deps/db-4.8.30.NC/build_unix
 BDB_LIB_PATH=C:/deps/db-4.8.30.NC/build_unix
-OPENSSL_INCLUDE_PATH=C:/deps/openssl-1.0.1g/include
-OPENSSL_LIB_PATH=C:/deps/openssl-1.0.1g
+OPENSSL_INCLUDE_PATH=C:/deps/openssl-1.0.1i/include
+OPENSSL_LIB_PATH=C:/deps/openssl-1.0.1i
 MINIUPNPC_INCLUDE_PATH=C:/deps
-LIBPNG_INCLUDE_PATH=C:/deps/libpng-1.6.10
-LIBPNG_LIB_PATH=C:/deps/libpng-1.6.10/.libs
+LIBPNG_INCLUDE_PATH=C:/deps/libpng-1.6.12
+LIBPNG_LIB_PATH=C:/deps/libpng-1.6.12/.libs
 MINIUPNPC_LIB_PATH=C:/deps/miniupnpc
-QRENCODE_LIB_PATH=C:/deps/qrencode-3.4.3/.libs
+QRENCODE_LIB_PATH=C:/deps/qrencode-3.4.4/.libs
 
 # use: qmake "RELEASE=1"
 contains(RELEASE, 1) {
@@ -123,6 +122,8 @@ LIBS += $$PWD/src/leveldb/libleveldb.a $$PWD/src/leveldb/libmemenv.a
 SOURCES += src/txdb-leveldb.cpp \
     src/groestl.c \
     src/hash.cpp
+
+
 !win32 {
     # we use QMAKE_CXXFLAGS_RELEASE even without RELEASE=1 because we use RELEASE to indicate linking preferences not -O preferences
     genleveldb.commands = cd $$PWD/src/leveldb && CC=$$QMAKE_CC CXX=$$QMAKE_CXX $(MAKE) OPT=\"$$QMAKE_CXXFLAGS $$QMAKE_CXXFLAGS_RELEASE\" libleveldb.a libmemenv.a
@@ -253,6 +254,9 @@ HEADERS += src/qt/bitcoingui.h \
     src/sph_types.h \
     src/txdb-leveldb.h
 
+
+
+
 SOURCES += src/qt/bitcoin.cpp \
     src/qt/bitcoingui.cpp \
     src/qt/transactiontablemodel.cpp \
@@ -335,6 +339,7 @@ FORMS += \
     src/qt/forms/askpassphrasedialog.ui \
     src/qt/forms/rpcconsole.ui \
     src/qt/forms/optionsdialog.ui
+
 
 contains(USE_QRCODE, 1) {
 HEADERS += src/qt/qrcodedialog.h
@@ -431,7 +436,7 @@ LIBS += $$join(BOOST_LIB_PATH,,-L,) $$join(BDB_LIB_PATH,,-L,) $$join(OPENSSL_LIB
 LIBS += -lssl -lcrypto -ldb_cxx$$BDB_LIB_SUFFIX
 # -lgdi32 has to happen after -lcrypto (see  #681)
 windows:LIBS += -lws2_32 -lshlwapi -lmswsock -lole32 -loleaut32 -luuid -lgdi32
-LIBS += -lboost_system$$BOOST_LIB_SUFFIX -lboost_filesystem$$BOOST_LIB_SUFFIX -lboost_program_options$$BOOST_LIB_SUFFIX -lboost_thread$$BOOST_LIB_SUFFIX
+LIBS += -lboost_system$$BOOST_LIB_SUFFIX -lboost_filesystem$$BOOST_LIB_SUFFIX -lboost_program_options$$BOOST_LIB_SUFFIX -lboost_thread$$BOOST_THREAD_LIB_SUFFIX
 windows:LIBS += -lboost_chrono$$BOOST_LIB_SUFFIX
 
 contains(RELEASE, 1) {
