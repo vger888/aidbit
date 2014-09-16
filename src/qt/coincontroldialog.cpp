@@ -103,6 +103,7 @@ CoinControlDialog::CoinControlDialog(QWidget *parent) :
 
     // (un)select all
     connect(ui->pushButtonSelectAll, SIGNAL(clicked()), this, SLOT(buttonSelectAllClicked()));
+    connect(ui->pushButtonToggleSelected, SIGNAL(clicked()), this, SLOT(buttonToggleSelected()));
 
     ui->treeWidget->setColumnWidth(COLUMN_CHECKBOX, 84);
     ui->treeWidget->setColumnWidth(COLUMN_AMOUNT, 100);
@@ -172,6 +173,20 @@ void CoinControlDialog::buttonSelectAllClicked()
     ui->treeWidget->setEnabled(true);
     CoinControlDialog::updateLabels(model, this);
 }
+
+
+void CoinControlDialog::buttonToggleSelected()
+{
+    ui->treeWidget->setEnabled(false);
+    foreach (QTreeWidgetItem *item, ui->treeWidget->selectedItems())
+            if (item->checkState(0) == Qt::Unchecked)
+                item->setCheckState(0, Qt::Checked);
+            else
+                item->setCheckState(0, Qt::Unchecked);
+    ui->treeWidget->setEnabled(true);
+    CoinControlDialog::updateLabels(model, this);
+}
+
 
 // context menu
 void CoinControlDialog::showMenu(const QPoint &point)
